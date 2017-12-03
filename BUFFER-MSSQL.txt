@@ -1,0 +1,98 @@
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+select SUBSTRING(Produktdetail, 1, PATINDEX('%fällt%', Produktdetail)), IIF(PATINDEX('%fällt%', Produktdetail)=0, LEN(Produktdetail), PATINDEX('%fällt%', Produktdetail)-1)
+
+select SUBSTRING(Produktdetail, 1, IIF(PATINDEX('%,%fällt%', Produktdetail)=0, LEN(Produktdetail), PATINDEX('%,%fällt%', Produktdetail)-1))
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Nike', 'Puma');
+
+SELECT PATINDEX('ter', 'interesting data'); 
+
+--01.12.2017-------------------------------------------------------------------------------
+
+  use testdatenbank;
+
+
+  SELECT *
+  from Produktvarianten as p, groessen as g
+  where p.GroessenNr = g.GroessenID;
+
+BEGIN TRANSACTION
+UPDATE PRODUKTVARIANTEN
+SET 
+Laenge = 
+(
+CASE 
+WHEN GroessenNr = 1 THEN 67
+WHEN GroessenNr = 2 THEN 70
+WHEN GroessenNr = 3 THEN 73
+WHEN GroessenNr = 4 THEN 75
+WHEN GroessenNr = 5 THEN 77
+WHEN GroessenNr = 6 THEN 79
+WHEN GroessenNr = 7 THEN 82
+WHEN GroessenNr = 8 THEN 84
+WHEN GroessenNr = 9 THEN 86
+END
+),
+Breite = 
+(
+CASE 
+WHEN GroessenNr = 1 THEN 45
+WHEN GroessenNr = 2 THEN 48
+WHEN GroessenNr = 3 THEN 50
+WHEN GroessenNr = 4 THEN 52
+WHEN GroessenNr = 5 THEN 54
+WHEN GroessenNr = 6 THEN 58
+WHEN GroessenNr = 7 THEN 60
+WHEN GroessenNr = 8 THEN 62
+WHEN GroessenNr = 9 THEN 64
+END
+)
+;
+rollback;
+
+--29.11.2017-------------------------------------------------------------------------------
+select * 
+  from information_schema.columns 
+ where table_name = 'aspnet_Membership'
+ order by ordinal_position
+
+
+
+
+CREATE INDEX NAME_IDX ON MARKEN(NAME);
+
+CREATE UNIQUE INDEX  NAME_IDX2 ON MARKEN(NAME);
+
+
+
+SELECT *
+FROM FARBEN
+ORDER BY 2 ASC;
+
+
+SELECT *
+FROM FARBEN;
+
+CREATE TABLE NUEVA IS
+SELECT *
+FROM RECHNUNGEN;
+
+BEGIN TRANSACTION
+INSERT INTO FARBEN
+VALUES(16, 'AMARILLU');
+;
+
+ROLLBACK;
+---------------------------------------------------------------------------------
+
