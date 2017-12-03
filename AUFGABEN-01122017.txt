@@ -1,0 +1,439 @@
+Lesen Sie im Buch
+Kapitel 6: 
+Seite 103 - 110 	SQL und Select
+
+Datenbankanpassungen
+
+Besondere Daten zu allen Produkten
+==================================
+Alle (Standardwerte): 
+Größe XS (39):  Länge: 67, Breite (Hüfte): 45 
+Größe S (40): 	Länge: 70, Breite (Hüfte): 48 
+Größe M (41): 	Länge: 73, Breite (Hüfte): 50
+Größe L (42): 	Länge: 75, Breite (Hüfte): 52
+Größe XL (43):	Länge: 77, Breite (Hüfte): 54
+Größe XXL (44): Länge: 79, Breite (Hüfte): 58
+Größe 3XL (45): Länge: 82, Breite (Hüfte): 60
+Größe 4XL (46): Länge: 84, Breite (Hüfte): 62
+Größe 5XL (47): Länge: 86, Breite (Hüfte): 64
+
+------------------------------------------------------------------
+option 1
+use testdatenbank;
+
+SELECT *
+from Produktvarianten as p, groessen as g
+where p.GroessenNr = g.GroessenID;
+
+BEGIN TRANSACTION
+UPDATE PRODUKTVARIANTEN
+SET 
+Laenge = ( CASE 
+WHEN GroessenNr = 1 THEN 67
+WHEN GroessenNr = 2 THEN 70
+WHEN GroessenNr = 3 THEN 73
+WHEN GroessenNr = 4 THEN 75
+WHEN GroessenNr = 5 THEN 77
+WHEN GroessenNr = 6 THEN 79
+WHEN GroessenNr = 7 THEN 82
+WHEN GroessenNr = 8 THEN 84
+WHEN GroessenNr = 9 THEN 86
+END),
+Breite = ( CASE 
+WHEN GroessenNr = 1 THEN 45
+WHEN GroessenNr = 2 THEN 48
+WHEN GroessenNr = 3 THEN 50
+WHEN GroessenNr = 4 THEN 52
+WHEN GroessenNr = 5 THEN 54
+WHEN GroessenNr = 6 THEN 58
+WHEN GroessenNr = 7 THEN 60
+WHEN GroessenNr = 8 THEN 62
+WHEN GroessenNr = 9 THEN 64
+END)
+;
+rollback;
+
+option 2
+
+BEGIN TRANSACTION
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 67, Breite = 45
+WHERE GroessenNr = 1;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 67, Breite =  45
+WHERE GroessenNr = 1;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 70, Breite =  48
+WHERE GroessenNr = 2;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 73, Breite =  50
+WHERE GroessenNr = 3;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 75, Breite =  52
+WHERE GroessenNr = 4;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 77, Breite =  54
+WHERE GroessenNr = 5;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 79, Breite =  58
+WHERE GroessenNr = 6;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 82, Breite =  60
+WHERE GroessenNr = 7;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 84, Breite =  62
+WHERE GroessenNr = 8;
+
+UPDATE PRODUKTVARIANTEN
+SET Laenge = 86, Breite =  64
+WHERE GroessenNr = 9;
+
+rollback;
+------------------------------------------------------------------
+
+Alle Longshirts sollen 15cm länger sein
+
+SELECT *
+from Produktvarianten as pv, Kategorien as k, produkte as p
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = k.KategorieID and
+k.Name like 'Longshirt%';
+
+
+BEGIN TRANSACTION
+update Produktvarianten set
+Laenge = Laenge + 15
+where ProduktNr in(
+SELECT DISTINCT pv.ProduktNr
+from Produktvarianten as pv, Kategorien as k, produkte as p
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = k.KategorieID and
+k.Name like 'Longshirt%');
+
+rollback;
+
+------------------------------------------------------------------
+
+Alle Bekleidungsstücke für Frauen 10cm kürzer, und 15cm weniger Breite
+
+SELECT *
+from Produktvarianten as pv, produkte as p, Zielgruppen as z
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = z.ZielgruppenID and
+z.Name like 'Frau%';
+
+BEGIN TRANSACTION
+update Produktvarianten set
+Laenge = Laenge - 10,
+Breite = Breite -15
+where ProduktNr in(
+SELECT DISTINCT pv.ProduktNr
+from Produktvarianten as pv, produkte as p, Zielgruppen as z
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = z.ZielgruppenID and
+z.Name like 'Frau%'
+);
+
+rollback;
+
+------------------------------------------------------------------
+
+Alle Hosen erhalten eine feste Länge von 88
+
+SELECT *
+from Produktvarianten as pv, Kategorien as k, produkte as p
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = k.KategorieID and
+k.Name like 'Hose%';
+
+
+BEGIN TRANSACTION
+update Produktvarianten set
+Laenge = 88
+where ProduktNr in(
+SELECT DISTINCT pv.ProduktNr
+from Produktvarianten as pv, Kategorien as k, produkte as p
+where pv.ProduktNr = p.ProduktID and
+p.KategorieNr = k.KategorieID and
+k.Name like 'Hose%');
+
+rollback;
+
+------------------------------------------------------------------
+
+Carhartt, Esprit, Superdry fällt 3cm kleiner aus
+
+select *
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Carhartt', 'Esprit', 'Superdry');
+
+
+BEGIN TRANSACTION
+update Produkte set
+Produktdetail = Produktdetail + ', fällt 3cm kleiner aus'
+where ProduktID in(
+select p.ProduktID
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Carhartt', 'Esprit', 'Superdry'));
+
+rollback;
+
+------------------------------------------------------------------
+
+Nike und Puma fällt 2cm größer aus
+
+select *
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Nike', 'Puma');
+
+
+select SUBSTRING(Produktdetail, 1, IIF(PATINDEX('%,%fällt%', Produktdetail)=0, LEN(Produktdetail), PATINDEX('%,%fällt%', Produktdetail)-1))
+
+select SUBSTRING(Produktdetail, 1, IIF(PATINDEX('%,%fällt%', Produktdetail)=0, LEN(Produktdetail), PATINDEX('%,%fällt%', Produktdetail)-1)) + ', fällt 2cm größer aus'
+
+select *
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Nike', 'Puma');
+
+BEGIN TRANSACTION
+update Produkte set
+Produktdetail = SUBSTRING(Produktdetail, 1, IIF(PATINDEX('%,%fällt%', Produktdetail)=0, LEN(Produktdetail), PATINDEX('%,%fällt%', Produktdetail)-1)) + ', fällt 2cm größer aus'
+where ProduktID in(
+select p.ProduktID
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name in ('Nike', 'Puma'));
+
+rollback;
+
+------------------------------------------------------------------
+
+Erstellen Sie Abfragen mit Select
+mit dem Abfrageeditor im SQL Server Management Studio.
+
+------------------------------------------------------------------
+1. Alle Daten anzeigen
+   Zeigen Sie alle Produkte an, mit allen Daten, die vorhanden sind.
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr;
+
+------------------------------------------------------------------
+2. Alias
+   Lesen Sie die Produkte aus, nur Produktname und Preis.
+   Erstellen Sie den Spitznamen "Produkt"
+
+SELECT pr.Produktdetail as  "Produkt", pv.Verkaufspreis
+SELECT DISTINCT pr.ProduktID, pr.Produktdetail as  "Produkt", pv.Verkaufspreis
+
+SELECT DISTINCT pr.Produktdetail as  "Produkt", pv.Verkaufspreis
+FROM Produkte pr, Produktvarianten pv
+WHERE
+pr.ProduktID=pv.ProduktNr;
+
+------------------------------------------------------------------
+3. WHERE
+	Zeigen Sie nur Produkte für Männer an
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+zg.Name like 'Männer%';
+
+	Zeigen Sie nur Produkte für Frauen an
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+zg.Name like 'Frau%';
+
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+pr.ZielgruppenNr IN (SELECT ZielgruppenID FROM Zielgruppen WHERE zg.Name like 'Frau%') and
+ka.KategorieID=pr.KategorieNr;
+
+	Zeigen Sie Produkte an, welche für beide Geschlechter geeignet sind
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+pr.ZielgruppenNr IN (SELECT ZielgruppenID FROM Zielgruppen WHERE zg.Name IN ('Frauen', 'Männer')) and
+ka.KategorieID=pr.KategorieNr
+ORDER BY 4 ASC, 9 DESC;
+
+------------------------------------------------------------------
+4. LIKE
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+pr.Produktdetail LIKE '%Jacke%';
+
+	Zeigen Sie Produkte an, die das Wort "Jacke" beinhalten
+	Zeigen Sie Produkte an, die das Wort "Kapuze" beinhalten
+	Zeigen Sie Produkte an, die das Wort "Shirt" beinhalten
+------------------------------------------------------------------
+5. AND, OR und NOT
+	Zeigen Sie nur Produkte an, die es in rot / gelb / orange gibt
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+fa.Name IN ('rot', 'gelb', 'orange')
+ORDER BY fa.Name, gr.GroessenID ASC;
+
+	Zeigen Sie nur Produkte an, welche 39,95 oder 29,95 kosten
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+pv.Verkaufspreis IN (39.95, 29.95);
+
+	Zeigen Sie nur Produkte an, welche NICHT 39,95 und NICHT 29,95 kosten 
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+pv.Verkaufspreis NOT IN (39.95, 29.95)
+order by pv.Verkaufspreis ASC;
+
+	Zeigen Sie nur Produkte an, welche nicht von Nike oder Puma sind
+
+select *
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name NOT in ('Nike', 'Puma');
+
+------------------------------------------------------------------
+6. Bedingung mit AND OR NOT und ()
+	Zeigen Sie nur Produkte an, die das Wort "Shirt" beinhalten und 49,95 kosten.
+			Dabei darf jedoch kein Produkt von "Puma" gezeigt werden.
+------------------------------------------------------------------
+7. Reguläre Ausdrücke LIKE [ABC]%	Fängt mit A oder B oder C an
+	Zeigen Sie Produkte an, die mit dem Buchstaben "N" beginnen
+	Zeigen Sie Produkte an, die mit dem Buchstaben "K" beginnen
+	Zeigen Sie Produkte an, die mit dem Buchstaben "A" oder "E" oder "I" oder "O" oder "U" beginnen
+
+select *
+from produkte as p, Marken m
+where p.MarkenNr=m.MarkenID and
+m.Name LIKE ('[AEIOU]%');
+
+------------------------------------------------------------------
+8. DISTINCT
+	Zeigen Sie die Produktnamen an. Doppelte Daten sollen nicht angezeigt werden
+	z.B. soll das wort T-Shirt oder Hemd oder Rock nur einmal erscheinen.
+------------------------------------------------------------------
+9. Größer oder Kleiner
+	Zeigen Sie Produkte an, die mehr als 100 EURO kosten
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+pv.Verkaufspreis > 100
+order by pv.Verkaufspreis ASC;
+
+	Zeigen Sie Produkte an, welche weniger als 50 EURO kosten
+------------------------------------------------------------------
+10. BETWEEN (Zwischen)
+	Zeigen Sie Produkte an, welche zwischen 25 und 75 EURO kosten
+
+pv.Verkaufspreis NOT BETWEEN 25 AND 75
+
+	Zeigen Sie Produkte an, welche ausserhalb von 25 bis 75 EURO kosten
+
+SELECT pr.ProduktID ID, pr.Produktdetail, ma.Name Marke, zg.Name Zielgruppe, ka.Name Kategorie, gr.Name Groesse, pv.Breite, pv.Laenge, pv.Verkaufspreis, fa.Name Farbe
+FROM Produkte pr, Produktvarianten pv, Groessen gr, Farbzusammensetzung fz, Farben fa, Marken ma, Zielgruppen zg, Kategorien ka
+WHERE
+pr.ProduktID=pv.ProduktNr and
+pv.GroessenNr=gr.GroessenID and
+fz.ProduktNr=pr.ProduktID and
+fa.FarbID=fz.FarbNr and
+ma.MarkenID=pr.MarkenNr and
+zg.ZielgruppenID=pr.ZielgruppenNr and
+ka.KategorieID=pr.KategorieNr and
+pv.Verkaufspreis NOT BETWEEN 25 AND 75
+order by pv.Verkaufspreis ASC;
+
+------------------------------------------------------------------
