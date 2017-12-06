@@ -14,13 +14,18 @@ Seite 110 bis 112	Joins
 9. Welche Produkte wurden mit der ersten Rechnung verkauft
 10. Welche Produkte wurden mit der zweiten Rechnung verkauft
 */
-
+use testdatenbank;
 ------------------------------------------------------------------------------------------
 -- 1. Zeigen Sie alle Produkte und deren mögliche Farben an
 
 SELECT pd.ProduktID, pd.Produktdetail, fa.Name
 FROM Farbzusammensetzung fs
 INNER JOIN PRODUKTE pd ON fs.ProduktNR=pd.ProduktID
+INNER JOIN FARBEN fa ON fs.FarbNr=fa.FarbID;
+
+SELECT pd.ProduktID, pd.Produktdetail, fa.Name
+FROM PRODUKTE pd
+INNER JOIN Farbzusammensetzung fs ON fs.ProduktNR=pd.ProduktID
 INNER JOIN FARBEN fa ON fs.FarbNr=fa.FarbID;
 
 SELECT pd.ProduktID, pd.Produktdetail, fa.Name
@@ -67,7 +72,27 @@ INNER JOIN GROESSEN gr ON pv.GroessenNr=gr.GroessenID;
 SELECT gr.Name, COUNT(1) "Mal verkauft"
 FROM Produktverkauf pv
 INNER JOIN GROESSEN gr ON pv.GroessenNr=gr.GroessenID
+WHERE pv.ProduktNr IS NOT NULL
 GROUP BY gr.Name;
+
+SELECT *
+FROM Produktverkauf pv
+INNER JOIN GROESSEN gr ON pv.GroessenNr=gr.GroessenID
+WHERE pv.ProduktNr IS NOT NULL;
+
+SELECT DISTINCT gr.GroessenID,  gr.NAME
+FROM GROESSEN gr
+LEFT OUTER JOIN Produktverkauf pv ON pv.GroessenNr=gr.GroessenID
+WHERE pv.VERKAUFID IS NULL OR (pv.PRODUKTNR IS NULL AND pv.VERKAUFID IS NOT NULL);
+
+SELECT *
+FROM GROESSEN
+WHERE NAME NOT IN(
+SELECT gr.Name
+FROM Produktverkauf pv
+INNER JOIN GROESSEN gr ON pv.GroessenNr=gr.GroessenID
+WHERE pv.ProduktNr IS NOT NULL);
+
 
 ------------------------------------------------------------------------------------------
 -- 6. Welche Kategorien haben Produkte
