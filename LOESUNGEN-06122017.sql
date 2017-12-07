@@ -27,12 +27,12 @@ use testdatenbank;
 
 SELECT Produktdetail, COUNT(1) MENGE
 FROM ANGEBOTE
-WHERE kategorie LIKE 'T-Shirt%'
+WHERE kategorie LIKE '%Shirt%'
 GROUP BY Produktdetail;
 
 SELECT *
 FROM ANGEBOTE
-WHERE kategorie LIKE 'T-Shirt%'
+WHERE kategorie LIKE '%Shirt%'
 ORDER BY Produktdetail;
 
 ------------------------------------------------------------------------------------------
@@ -78,13 +78,18 @@ WHERE pd.KategorieNr IN(SELECT ka.KategorieID FROM KATEGORIEN ka WHERE ka.Name L
 -- 6. Berechnen Sie den Warenwert je Kategorie
 
 SELECT pd.KategorieNr,
-FORMAT((ISNULL(SUM(MENGE), 0)-(SELECT ISNULL(SUM(MENGE), 0)FROM PRODUKTVERKAUF pv INNER JOIN PRODUKTE pd2 ON pd2.ProduktID=pv.ProduktNr WHERE pd2.KategorieNr=pd.KategorieNr)), '#,##0.00 EUR') AS WARENWERT
+FORMAT((ISNULL(SUM(MENGE), 0)-(SELECT ISNULL(SUM(MENGE), 0)*AVG(pe.Einkaufspreis) FROM PRODUKTVERKAUF pv INNER JOIN PRODUKTE pd2 ON pd2.ProduktID=pv.ProduktNr WHERE pd2.KategorieNr=pd.KategorieNr)), '#,##0.00 €') AS WARENWERT
 FROM PRODUKTEINKAUF pe
 INNER JOIN PRODUKTE pd ON pd.ProduktID=pe.ProduktNr
 GROUP BY pd.KategorieNr;
 
-
 /*
+SELECT pd.KategorieNr,
+FORMAT((ISNULL(SUM(MENGE), 0)-(SELECT ISNULL(SUM(MENGE), 0) FROM PRODUKTVERKAUF pv INNER JOIN PRODUKTE pd2 ON pd2.ProduktID=pv.ProduktNr WHERE pd2.KategorieNr=pd.KategorieNr)), '#,##0.00 €') AS WARENWERT
+FROM PRODUKTEINKAUF pe
+INNER JOIN PRODUKTE pd ON pd.ProduktID=pe.ProduktNr
+GROUP BY pd.KategorieNr;
+
 SELECT pd.KategorieNr,
 FORMAT(ISNULL(SUM(MENGE), 0)*AVG(pe.Einkaufspreis), '#,##0.00 EUR') AS WARENWERT
 FROM PRODUKTEINKAUF pe
