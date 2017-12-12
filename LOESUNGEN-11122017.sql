@@ -202,19 +202,19 @@ DECLARE @Neu_Produktdetail VARCHAR(255) = 'Jack Wolfskin Mütze: 100% Nylon';
 DECLARE @Param_Marken_Name VARCHAR(20) = 'Jack Wolfskin';
 DECLARE @Param_Zielgruppen_Name VARCHAR(20) = 'Unisex Erw.';
 DECLARE @Param_Kategorien_Name VARCHAR(20) = 'Mütze';
-DECLARE @Param_Farbe_Name VARCHAR(20) = 'orange';
+DECLARE @Param_Farbe_Name VARCHAR(20) = 'gelb';
 DECLARE @Param_Groesse_Name VARCHAR(20) = 'ONE SIZE';
 
 DECLARE @Param_Lieferante int = 11;
 DECLARE @Param_Mitarbeiter int = 2;
 DECLARE @Param_Datum DATE = GETDATE()-20;
-DECLARE @Param_MENGE smallint = 10;
-DECLARE @Param_EINKAUFPREIS DECIMAL(6, 2) = 3.0;
+DECLARE @Param_MENGE smallint = 20;
+DECLARE @Param_EINKAUFPREIS DECIMAL(6, 2) = 2.50;
 DECLARE @Param_VERKAUFPREIS DECIMAL(6, 2) = 10.0;
 DECLARE @Param_Breite tinyint = NULL;
 DECLARE @Param_Laenge tinyint = NULL;
 
-DECLARE @Neu_ProduktID int = (SELECT MAX(PRODUKTID)+1 FROM PRODUKTE);
+DECLARE @Neu_ProduktID int = ISNULL((SELECT DISTINCT PRODUKTID FROM PRODUKTE WHERE PRODUKTDETAIL=@Neu_Produktdetail), 0);
 DECLARE @Neu_MarkenNr int = ISNULL((SELECT DISTINCT MARKEN.MarkenID FROM MARKEN WHERE Name=@Param_Marken_Name), 0);
 DECLARE @Neu_ZielgruppenNr int = ISNULL((SELECT DISTINCT ZielgruppenID FROM ZIELGRUPPEN WHERE Name=@Param_Zielgruppen_Name), 0);
 DECLARE @Neu_KategorienNr int = ISNULL((SELECT DISTINCT KategorieID FROM KATEGORIEN WHERE Name=@Param_KATEGORIEN_Name), 0);
@@ -267,34 +267,48 @@ BEGIN
 END
 --PRODUKTE--------------------------------------------------------------------------
 BEGIN TRANSACTION;
+BEGIN TRY  
 
-	insert into produkte(produktid, markennr, zielgruppennr, kategorienr, produktdetail) 
-	values (@Neu_ProduktID, @Neu_MarkenNr, @Neu_ZielgruppenNr, @Neu_KategorienNr, @Neu_Produktdetail);
+	IF(@Neu_ProduktID=0)
+	BEGIN
+		SET @Neu_ProduktID = (SELECT MAX(PRODUKTID) FROM PRODUKTE)+1;
+
+		insert into produkte(produktid, markennr, zielgruppennr, kategorienr, produktdetail) 
+		values (@Neu_ProduktID, @Neu_MarkenNr, @Neu_ZielgruppenNr, @Neu_KategorienNr, @Neu_Produktdetail);
+	END;
 
 --PRODUKTVARIANTEN--------------------------------------------------------------------------
 	INSERT INTO PRODUKTVARIANTEN
 	VALUES(@Neu_ProduktID, @Neu_GroesseNr, @Param_VERKAUFPREIS, @Param_Laenge, @Param_Breite);
 
-	IF((SELECT COUNT(*) FROM PRODUKTVARIANTEN WHERE PRODUKTNR=@Neu_ProduktID AND GROESSENNR=@Neu_GroesseNr AND VERKAUFSPREIS=@Param_EINKAUFPREIS)=1)
-		COMMIT TRANSACTION;
-	ELSE
-		ROLLBACK TRANSACTION;
 --PRODUKTEINKAUF--------------------------------------------------------------------------
-BEGIN TRANSACTION;
 	SET @Neu_EinkaufID = (SELECT MAX(EinkaufID) FROM PRODUKTEINKAUF)+1;
 
-BEGIN TRY  
 	INSERT INTO PRODUKTEINKAUF
 	VALUES(@Neu_EinkaufID, @Param_EINKAUFPREIS, @Param_MENGE, @Neu_ProduktID, @Param_Mitarbeiter, @Param_Lieferante, @Param_Datum, @Neu_GroesseNr, @Neu_FarbeNr);
+
+--FARBZUSAMMENSETZUNG--------------------------------------------------------------------------
+
+	INSERT INTO FARBZUSAMMENSETZUNG
+	VALUES(@Neu_ProduktID, @Neu_FarbeNr);
+
 END TRY  
+
 BEGIN CATCH  
 	DECLARE @LOCAL_ERROR int = 0;
-	SELECT @LOCAL_ERROR=ERROR_NUMBER();
+	DECLARE @LOCAL_MESSAGE VARCHAR(512) = '';
+	SELECT @LOCAL_ERROR=ERROR_NUMBER(), @LOCAL_MESSAGE=ERROR_MESSAGE();
 
 	IF(@LOCAL_ERROR=0)
-		COMMIT TRANSACTION;
+		BEGIN
+			COMMIT TRANSACTION;
+			PRINT 'ALLES IN ORDNUNG';
+		END
 	ELSE
-		ROLLBACK TRANSACTION;
+		BEGIN
+			ROLLBACK TRANSACTION;
+			PRINT 'HORROR ERROR: '+ CAST(@LOCAL_ERROR AS VARCHAR) + ': ' + @LOCAL_MESSAGE;
+		END
 END CATCH  
 
 ---------------------------------------------------------------------------
@@ -319,4 +333,6 @@ SELECT           ERROR_NUMBER();
 SELECT 1/0;  
 SELECT           ERROR_NUMBER() AS ErrorNumber         ,ERROR_MESSAGE() AS ErrorMessage;  
 
+PRINT @@TRANCOUNT;
 
+COMMIT;
