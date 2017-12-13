@@ -148,23 +148,23 @@ Länge+Breite zurückliefert, wenn man eine Größe auswählt.
 ------------------------------------------------------------------------------------   
 */
 
-ALTER FUNCTION FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(@PRODUKT AS int, @GROESSE AS VARCHAR(20))
+ALTER FUNCTION FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(@GROESSE AS int)
 RETURNS int
 AS
 BEGIN
-	DECLARE @GROESSENR int = dbo.FNC_GROESSE_FINDEN(@GROESSE);
 	DECLARE @WERT int;
-	SET @WERT = (SELECT AVG(pv.Laenge+pv.Breite) FROM PRODUKTVARIANTEN pv WHERE pv.ProduktNr=@PRODUKT AND pv.GroessenNr=@GROESSENR);
+	SET @WERT = (SELECT AVG(pv.Laenge+pv.Breite) FROM PRODUKTVARIANTEN pv WHERE pv.GroessenNr=@GROESSE);
 
 	RETURN(@WERT);
 END
 
-SELECT dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(2, 'XS');
+SELECT dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(1);
 
-SELECT DISTINCT pd.Produktdetail, pv.Laenge, pv.Breite, pv.Laenge+pv.Breite, dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.ProduktNr, pv.GroessenNr),
-pv.Laenge+pv.Breite-dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.ProduktNr, pv.GroessenNr)
+SELECT DISTINCT pd.Produktdetail, pv.Laenge, pv.Breite, pv.Laenge+pv.Breite SUMA, dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.GroessenNr) DURCHNITTW,
+pv.Laenge+pv.Breite-dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.GroessenNr) UNTERSCHIED
 FROM Produktvarianten pv
-INNER JOIN PRODUKTE pd ON pd.ProduktID=pv.ProduktNr;
+INNER JOIN PRODUKTE pd ON pd.ProduktID=pv.ProduktNr
+WHERE pv.Laenge IS NOT NULL OR pv.Breite IS NOT NULL;
 
 
 SELECT DISTINCT pd.Produktdetail, pv.GroessenNr, AVG(pv.Laenge+pv.Breite)
@@ -212,6 +212,7 @@ GROUP BY pv.ProduktNr
 SELECT SUM(pv.Menge) MENGE FROM PRODUKTVERKAUF pv WHERE PRODUKTNR IS NOT NULL AND pv.ProduktNr=5
 
 
+------------------------------------------------------------------------------------   
 
 
 
