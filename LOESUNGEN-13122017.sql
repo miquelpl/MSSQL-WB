@@ -32,6 +32,8 @@ um nur die Produkte anzuzeigen, welche mindestens 10x verkauft wurden.
 1. Erstellen Sie eine Funktion zur Generierung einer EinkaufID, bestehend aus Datum und laufender Nummer.
 ------------------------------------------------------------------------------------
 */
+USE TESTDATENBANK;
+
 
 ALTER FUNCTION FNC_EINKAUF_ID_GENERIERUNG()
 RETURNS TABLE
@@ -52,7 +54,7 @@ SELECT * FROM dbo.FNC_EINKAUF_ID_GENERIERUNG();
 ALTER FUNCTION FNC_FARBE_ANZEIGEN(@FARBE AS VARCHAR(20))
 RETURNS TABLE
 AS
-	RETURN
+RETURN
 SELECT pd.Produktdetail, fs.FarbNr, fa.Name
 FROM Farbzusammensetzung fs
 INNER JOIN PRODUKTE pd ON pd.ProduktID=fs.ProduktNr
@@ -74,7 +76,7 @@ SELECT pd.Produktdetail, fs.FarbNr, fa.Name
 FROM Farbzusammensetzung fs
 INNER JOIN PRODUKTE pd ON pd.ProduktID=fs.ProduktNr
 INNER JOIN FARBEN fa ON fa.FarbID=fs.FarbNr
-WHERE FARBNR=dbo.FNC_FARBE_FINDEN('rosa');
+WHERE FARBNR=dbo.FNC_FARBE_FINDEN('ora');
 
 SELECT dbo.FNC_FARBE_FINDEN('ora');
 
@@ -106,6 +108,8 @@ SELECT dbo.FNC_GROESSE_FINDEN('XL');
 DECLARE @GROESSE VARCHAR(20) = 'XS';
 SELECT DISTINCT GROESSENID FROM GROESSEN WHERE Name LIKE '%'+@GROESSE+'%'
 
+SELECT *
+FROM GROESSEN;
 
 /*
 4. Erstellen Sie Eine Funktion welche den Durchschnittwert der Länge zurückliefert.
@@ -113,6 +117,23 @@ SELECT DISTINCT GROESSENID FROM GROESSEN WHERE Name LIKE '%'+@GROESSE+'%'
    ob ein Produkt größer oder kleiner ausfällt.
 ------------------------------------------------------------------------------------   
 */
+
+ALTER FUNCTION FNC_DURCHNITTWERT_FINDEN(@PRODUKT AS int)
+RETURNS int
+AS
+BEGIN
+	DECLARE @WERT int;
+--	SET @WERT = (SELECT AVG(pv.Laenge) FROM PRODUKTVARIANTEN pv WHERE pv.ProduktNr=@PRODUKT);
+	SET @WERT = (SELECT AVG(pv.Laenge) FROM PRODUKTVARIANTEN pv);
+	RETURN(@WERT);
+END
+
+SELECT DISTINCT pd.Produktdetail, pv.Laenge, dbo.FNC_DURCHNITTWERT_FINDEN(pv.ProduktNr) DURCHNITT, pv.Laenge-dbo.FNC_DURCHNITTWERT_FINDEN(pv.ProduktNr) UNTERSCHIED
+FROM Produktvarianten pv
+INNER JOIN PRODUKTE pd ON pd.ProduktID=pv.ProduktNr
+WHERE pv.Laenge IS NOT NULL;
+
+SELECT dbo.FNC_DURCHNITTWERT_FINDEN(2);
 
 SELECT pv.ProduktNr, AVG(pv.Laenge)
 FROM PRODUKTVARIANTEN pv
@@ -124,21 +145,6 @@ WHERE pv.ProduktNr=2;
 
 SELECT AVG(pv.Laenge)
 FROM PRODUKTVARIANTEN pv
-
-ALTER FUNCTION FNC_DURCHNITTWERT_FINDEN(@PRODUKT AS int)
-RETURNS int
-AS
-BEGIN
-	DECLARE @WERT int;
-	SET @WERT = (SELECT AVG(pv.Laenge) FROM PRODUKTVARIANTEN pv WHERE pv.ProduktNr=@PRODUKT);
-	RETURN(@WERT);
-END
-
-SELECT DISTINCT pd.Produktdetail, pv.Laenge, dbo.FNC_DURCHNITTWERT_FINDEN(pv.ProduktNr), pv.Laenge-dbo.FNC_DURCHNITTWERT_FINDEN(pv.ProduktNr)
-FROM Produktvarianten pv
-INNER JOIN PRODUKTE pd ON pd.ProduktID=pv.ProduktNr;
-
-SELECT dbo.FNC_DURCHNITTWERT_FINDEN(2);
 
 /*
 5. Erstellen Sie Eine Funktion welche den Durchschnittwert der 
@@ -160,11 +166,13 @@ END
 
 SELECT dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(1);
 
-SELECT DISTINCT pd.Produktdetail, pv.Laenge, pv.Breite, pv.Laenge+pv.Breite SUMA, dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.GroessenNr) DURCHNITTW,
+SELECT pd.Produktdetail, gr.Name, pv.Laenge, pv.Breite, pv.Laenge+pv.Breite SUMA, dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.GroessenNr) DURCHNITTW,
 pv.Laenge+pv.Breite-dbo.FNC_LANG_BREIT_DURCHNITTWERT_FINDEN(pv.GroessenNr) UNTERSCHIED
 FROM Produktvarianten pv
 INNER JOIN PRODUKTE pd ON pd.ProduktID=pv.ProduktNr
-WHERE pv.Laenge IS NOT NULL OR pv.Breite IS NOT NULL;
+INNER JOIN GROESSEN gr ON gr.GroessenID=pv.GroessenNr
+WHERE pv.Laenge IS NOT NULL OR pv.Breite IS NOT NULL
+ORDER BY pv.GroessenNr ASC;
 
 
 SELECT DISTINCT pd.Produktdetail, pv.GroessenNr, AVG(pv.Laenge+pv.Breite)
