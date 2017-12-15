@@ -1,0 +1,67 @@
+﻿Projektaufgabe:
+================================================================================================
+Ein fiktiver Kunde meldet sich bei Ihnen. 
+Der Kunde benötigt Hilfe bei der Erstellung
+einer Datenbank für ein Dokumentenarchiv.
+
+Aktuell hat der Kunde viele lose Zettel.
+Darunter u.a. Rechnungen, Quittungen, Briefe, Bescheide und Verträge.
+
+Der Kunde hat mittlerweile über 20 Aktenordner mit Inhalt.
+Bei dieser Menge ist es nicht so einfach, bestimmte Dokumente zu finden.
+
+Daher möchte der Kunde seine Dokumente in einer Datenbank speichern.
+Jedes Dokument soll mit Datum und einem Pfad zum PDF / Bild abgespeichert werden.
+Dazu wird jedes Dokument eingescannt. Falls benötitigt soll das Dokument wieder ausgedruckt werden können.
+Der Kunde muss die Möglichkeit haben nach wichtigen Informationen zu suchen.
+
+Alle Papierunterlagen werden im Anschluss vernichtet.
+
+Übelegen Sie sich ein Konzept für eine Datenbank
+und mögliche Abfragen, welche mit der Datenbank durchgeführt werden könnten.
+
+================================================================================================
+Ablauftipps:
+================================================================================================
+1. Erstellen Sie sich einen Zeitplan.
+Ein Zeitplan könnte z.B. so aussehen
+	2 UE für Vorbereitung / Recherche 
+	4 UE für ein ER-Modell
+	1 UE Datenbankerstellung
+	2 UE Datenbankbefüllung
+	6 UE Erstellen von Datenbankanweisungen
+	4 UE Testen und Fehlerbeseitigung
+	1 UE Datenbanksicherung
+	4 UE Präsentation erstellen
+	24 UE Gesamt
+
+Passen Sie Ihren Zeitplan auf die Projektzeit an. Je Tag berücksichtigen Sie 8 UE / 10 UE.
+Durch den Zeitplan können Sie selbst prüfen, ob die Zeit reicht oder ob Sie
+an anderer Stelle Zeit sparen müssen.
+
+2. Überlegen Sie sich den Datenbankinhalt
+3. Planen Sie eine Datenbank
+4. Erstellen Sie ein ER-Modell
+5. Erstellen Sie die Datenbank aus Ihrer Planung
+6. Füllen Sie die Datenbank mit ein paar Datensätzen
+7. Überlegen Sie sich, welche Daten abgefragt bzw. verarbeitet werden können 
+8. Erstellen Sie eine kleine Präsentation mit, max. 10 Seiten. 
+Jede Seite sollte maximal ein Screenshot mit Überschrift oder alternativ 2 - 6 Zeilen
+langen Text beinhalten. (Halten Sie sich in der Präsentation kurz)
+
+Inhalte der Präsentation:
+================================================================================================
+a) ER-Modell
+b) Einsatzmöglichkeiten
+c) Skriptauszüge
+d) Welche Probleme gab es bei der Umsetzung?
+e) Was haben Sie daraus gelernt?
+
+9. Erstellen Sie eine STANDARD WINDOWS ZIP Datei (kein 7zip) 
+mit allen Daten aus Ihrem Projekt. 
+(Rechtsklick auf einen Ordner oder eine Datei -> Senden an -> Zip komprimierter Ordner)
+
+INHALT:
+================================================================================================
+1. Eine Datei mit Ihren SQL-Anweisungen
+2. Präsentation
