@@ -1,0 +1,191 @@
+﻿---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+BEGIN TRANSACTION;
+INSERT INTO FLUGGAESTE
+SELECT 
+2,
+NEXT VALUE FOR SQBUCHUNGNR,
+PCG, 
+NPE, 
+DNI, 
+DNA, 
+CASE
+WHEN CPA='826' THEN 195
+WHEN CPA='250' THEN 46
+WHEN CPA='276' THEN 35
+ELSE 0
+END AS CPA,
+ROW_NUMBER() OVER(ORDER BY DNI ASC)
+FROM PEOPLE
+WHERE YEAR(DNA) BETWEEN 1975 AND 1982;
+
+COMMIT;
+
+---------------------------------------------------------------------------------
+BEGIN TRANSACTION;
+INSERT INTO PERSONAL
+SELECT
+NEXT VALUE FOR [dbo].[SQPERSONAL],
+PCG + ' ' + SCG,
+NPE,
+1
+FROM PEOPLE
+WHERE YEAR(DNA) BETWEEN 1984 AND 1984;
+
+COMMIT;
+---------------------------------------------------------------------------------
+ALTER TABLE [dbo].[FLUEGE]
+ALTER COLUMN FK_FLUGZEUG smallint ;  
+
+ALTER TABLE [dbo].[FLUGGAESTE]
+DROP COLUMN FK_KLASSE;
+
+ALTER TABLE [dbo].[FLUGGAESTE]
+ALTER COLUMN FK_SITZ CHAR(3);  
+
+EXEC sp_rename 'dbo.FLUGGAESTE.FK_SITZ', 'SITZNAME', 'COLUMN'; 
+
+ALTER TABLE FLUEGE
+ADD FLUGNUMMER VARCHAR(10) NOT NULL;
+
+<img src='https://barcode.tec-it.com/barcode.ashx?data=This+is+a+PDF417+by+TEC-IT&code=PDF417&dpi=96&dataseparator=' alt='Barcode Generator TEC-IT'/>
+---------------------------------------------------------------------------------
+
+BEGIN TRANSACTION;
+INSERT INTO FLUGHAFEN
+SELECT
+NEXT VALUE FOR SQFLUGHAFENID,
+IATAID,
+fh.NAME,
+ORT,
+194
+FROM FHAUX fh
+WHERE LAND='USA' AND ORT IS NOT NULL AND FH.NAME IS NOT NULL;
+
+COMMIT;
+
+
+
+BEGIN TRANSACTION;
+INSERT INTO FLUGHAFEN
+SELECT
+--NEXT VALUE FOR SQFLUGHAFENID,
+IATAID,
+fh.NAME,
+ORT,
+LAENDERID
+FROM FHAUX fh
+INNER JOIN LAENDER la ON la.Name=fh.LAND
+WHERE ORT IS  NULL OR FH.NAME IS  NULL;
+
+COMMIT;
+
+ROLLBACK;
+
+
+
+TRUNCATE TABLE FLUGHAFEN;
+
+ALTER SEQUENCE [dbo].[SQFLUGHAFENID] RESTART WITH 1;
+
+---------------------------------------------------------------------------------
+
+BEGIN TRANSACTION;
+INSERT INTO FLUGHAFEN
+SELECT 
+ROW_NUMBER() OVER(ORDER BY name ASC) AS FLUGHAFENID,
+IATAID,
+NAME,
+ORT, 
+35
+FROM FHAUX
+WHERE LAND='DEUTSCHLAND' AND
+NAME IS NOT NULL;
+
+
+
+COMMIT;
+
+
+--01.12.2017-------------------------------------------------------------------------------
+
+  use testdatenbank;
+
+
+  SELECT *
+  from Produktvarianten as p, groessen as g
+  where p.GroessenNr = g.GroessenID;
+
+BEGIN TRANSACTION
+UPDATE PRODUKTVARIANTEN
+SET 
+Laenge = 
+(
+CASE 
+WHEN GroessenNr = 1 THEN 67
+WHEN GroessenNr = 2 THEN 70
+WHEN GroessenNr = 3 THEN 73
+WHEN GroessenNr = 4 THEN 75
+WHEN GroessenNr = 5 THEN 77
+WHEN GroessenNr = 6 THEN 79
+WHEN GroessenNr = 7 THEN 82
+WHEN GroessenNr = 8 THEN 84
+WHEN GroessenNr = 9 THEN 86
+END
+),
+Breite = 
+(
+CASE 
+WHEN GroessenNr = 1 THEN 45
+WHEN GroessenNr = 2 THEN 48
+WHEN GroessenNr = 3 THEN 50
+WHEN GroessenNr = 4 THEN 52
+WHEN GroessenNr = 5 THEN 54
+WHEN GroessenNr = 6 THEN 58
+WHEN GroessenNr = 7 THEN 60
+WHEN GroessenNr = 8 THEN 62
+WHEN GroessenNr = 9 THEN 64
+END
+)
+;
+rollback;
+
+--29.11.2017-------------------------------------------------------------------------------
+select * 
+  from information_schema.columns 
+ where table_name = 'aspnet_Membership'
+ order by ordinal_position
+
+
+
+
+CREATE INDEX NAME_IDX ON MARKEN(NAME);
+
+CREATE UNIQUE INDEX  NAME_IDX2 ON MARKEN(NAME);
+
+
+
+SELECT *
+FROM FARBEN
+ORDER BY 2 ASC;
+
+
+SELECT *
+FROM FARBEN;
+
+CREATE TABLE NUEVA IS
+SELECT *
+FROM RECHNUNGEN;
+
+BEGIN TRANSACTION
+INSERT INTO FARBEN
+VALUES(16, 'AMARILLU');
+;
+
+ROLLBACK;
+---------------------------------------------------------------------------------
+
